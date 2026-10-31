@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>정주행 클리커 · WITH 1위 만들기</title>
+<meta name="description" content="리센느 ‘WITH’를 차트 1위까지! 연타하고 응원 아이템을 사서 누가 제일 빨리 1위를 만드는지 겨뤄요. 비공식 팬 게임.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="정주행 클리커 · WITH 1위 만들기">
+<meta property="og:description" content="200위에서 1위까지, 몇 분 만에 올릴 수 있을까? 순위표에서 겨뤄요 (비공식 팬 게임)">
+<meta property="og:image" content="https://rescececene.github.io/rescene-with/og.png">
+<meta property="og:url" content="https://rescececene.github.io/rescene-with/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #e6e0d4; --paper: #fffdf8; --ink: #1b1a17; --ink2: #6b665c; --line: #e3ddd0; --red: #d6332a; --pink: #ff5a8a; --pink2: #fff1f5; --dark: #1b1a17; --dark2: #2b2a26; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: 'Pretendard Variable', sans-serif; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  [hidden] { display: none !important; }
+  #app { position: relative; max-width: 520px; min-height: 100%; margin: 0 auto; background: var(--paper); box-shadow: 0 0 0 1px #d8d1c3, 0 10px 40px rgba(0,0,0,.08); }
+  .pad { padding: 26px 20px 30px; }
+  .kick { font: 700 11px 'Pretendard Variable'; letter-spacing: .16em; color: var(--ink2); }
+  .btn { display: block; width: 100%; text-align: center; padding: 14px; border: 2px solid var(--ink); background: #fff; font: 800 16px 'Pretendard Variable'; }
+  .btn.pri { background: var(--ink); color: #fff; }
+  .btn.red { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.sm { padding: 10px; font-size: 14px; }
+  .btns { display: grid; gap: 10px; margin-top: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 50; background: var(--ink); color: #fff; padding: 10px 16px; font-size: 14px; font-weight: 600;
+    max-width: 90vw; text-align: center; opacity: 0; transition: opacity .2s; pointer-events: none; border-radius: 6px; }
+  #toast.on { opacity: .95; }
+
+  /* 시작 */
+  .ttl { font: 400 54px/1.0 'Black Han Sans'; margin: 10px 0 10px; letter-spacing: -.01em; }
+  .ttl em { font-style: normal; color: var(--red); }
+  .sub { font-size: 14.5px; line-height: 1.6; color: var(--ink2); }
+  .graph { margin: 20px 0 6px; height: 120px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); position: relative; }
+  .graph svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .graph span { position: absolute; font: 800 11px 'Pretendard Variable'; }
+  .nameBox { display: flex; border: 2px solid var(--ink); background: #fff; margin: 18px 0 6px; }
+  .nameBox span { padding: 0 14px; display: flex; align-items: center; background: #f2eee5; border-right: 2px solid var(--ink); font-weight: 800; font-size: 14px; }
+  .nameBox input { flex: 1; min-width: 0; border: 0; outline: none; padding: 12px; font: 700 17px 'Pretendard Variable'; background: transparent; }
+  .nameBox.need { border-color: var(--red); box-shadow: 0 0 0 3px rgba(214,51,42,.2); }
+  .hint { font-size: 12.5px; color: var(--ink2); margin-bottom: 12px; line-height: 1.5; }
+  .rules { margin: 16px 0 0; font-size: 13px; line-height: 1.7; color: var(--ink2); border-top: 1px solid var(--line); padding-top: 12px; }
+  .rules b { color: var(--ink); }
+
+  /* 순위표 */
+  .board { margin-top: 22px; border: 2px solid var(--ink); }
+  .board .hd { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--ink); color: #fff; }
+  .board .hd b { font: 400 20px 'Black Han Sans'; letter-spacing: .02em; }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button { padding: 4px 10px; font-size: 12.5px; font-weight: 800; border: 1.5px solid #fff; color: #fff; }
+  .tabs button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+  .board ol { list-style: none; max-height: 360px; overflow-y: auto; }
+  .board li { display: grid; grid-template-columns: 38px 1fr auto; gap: 8px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 14px; }
+  .board li .r { font: 400 18px 'Black Han Sans'; text-align: center; color: var(--ink2); }
+  .board li:nth-child(1) .r { color: #c9971c; } .board li:nth-child(2) .r { color: #8d96a0; } .board li:nth-child(3) .r { color: #a8653a; }
+  .board li .n { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .board li .t { font: 800 14.5px 'Pretendard Variable'; font-variant-numeric: tabular-nums; }
+  .board li.me { background: var(--pink2); }
+  .board li.me .n::after { content: " (나)"; color: var(--pink); font-size: 12px; }
+  .board .empty, .board .mine { padding: 12px; font-size: 13.5px; color: var(--ink2); text-align: center; border-top: 1px solid var(--line); }
+  .board .mine b { color: var(--ink); }
+
+  /* 게임 */
+  #game { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+  .top { padding: 12px 16px 10px; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .top .r1 { display: flex; justify-content: space-between; align-items: center; }
+  .clock { font: 800 15px 'Pretendard Variable'; font-variant-numeric: tabular-nums; }
+  .r2 { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2px; }
+  .rank { font: 400 58px/0.92 'Black Han Sans'; font-variant-numeric: tabular-nums; }
+  .rank small { font-size: 24px; margin-left: 2px; }
+  .rank.bump { animation: bump .35s; }
+  @keyframes bump { 40% { transform: scale(1.07); color: var(--red); } }
+  .up { color: var(--red); font: 800 15px 'Pretendard Variable'; text-align: right; line-height: 1.3; }
+  .up small { display: block; color: var(--ink2); font-weight: 600; font-size: 12px; }
+  /* 가상 차트 목록 — WITH 주변 5줄 */
+  .chart { margin-top: 10px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); overflow: hidden; }
+  .cr { display: grid; grid-template-columns: 34px 30px 34px 1fr; gap: 8px; align-items: center; height: 42px; padding: 0 6px; border-top: 1px solid var(--line); background: var(--paper); position: relative; }
+  .cr:first-child { border-top: 0; }
+  .cr .no { font: 400 19px 'Black Han Sans'; text-align: center; font-variant-numeric: tabular-nums; }
+  .cr .ch { font: 800 11px 'Pretendard Variable'; text-align: center; line-height: 1.1; }
+  .cr .ch.u { color: var(--red); } .cr .ch.d { color: #2f6fd6; } .cr .ch.s { color: #b3ab9b; }
+  .cr .cv { width: 34px; height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font: 400 13px 'Black Han Sans'; color: rgba(255,255,255,.9); }
+  .cr .tt { min-width: 0; line-height: 1.25; }
+  .cr .tt b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cr .tt small { display: block; font-size: 11.5px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cr.with { background: var(--pink2); z-index: 2; box-shadow: inset 4px 0 0 var(--pink); }
+  .cr.with .tt b { color: var(--red); }
+  .cr.rise { animation: rise .32s ease-out; }
+  .cr.drop { animation: drop .32s ease-out; }
+  @keyframes rise { from { transform: translateY(42px); } to { transform: none; } }
+  @keyframes drop { from { transform: translateY(-42px); } to { transform: none; } }
+  .chart-cap { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink2); margin-top: 4px; }
+  .bar { height: 10px; background: #ece6da; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--pink), var(--red)); transition: width .15s linear; }
+  .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); margin-top: 6px; }
+  .ev { margin: 10px 14px 0; padding: 9px 12px; background: var(--pink2); border: 1.5px dashed var(--pink); font-size: 13px; line-height: 1.5; min-height: 42px; }
+  .ev b { color: var(--red); }
+  .ev.warn { background: #fff3e0; border-color: #e08a00; }
+  .tapz { position: relative; flex: 1; min-height: 240px; display: flex; align-items: center; justify-content: center; overflow: hidden; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  #tap { width: 176px; height: 176px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 9px 0 #000, 0 18px 30px rgba(0,0,0,.25); transition: transform .06s, box-shadow .06s; touch-action: manipulation; }
+  #tap.dn { transform: translateY(6px); box-shadow: 0 3px 0 #000, 0 8px 16px rgba(0,0,0,.2); }
+  #tap .pl { font-size: 52px; line-height: 1; margin-left: 10px; }
+  #tap small { font: 800 13px 'Pretendard Variable'; margin-top: 6px; letter-spacing: .1em; }
+  #tap.boost { background: var(--pink); box-shadow: 0 9px 0 #b8325a, 0 18px 30px rgba(255,90,138,.35); }
+  .fl { position: absolute; font: 800 17px 'Pretendard Variable'; color: var(--red); pointer-events: none; animation: fl .7s forwards; white-space: nowrap; }
+  @keyframes fl { to { opacity: 0; transform: translateY(-46px); } }
+  #gold { position: absolute; z-index: 3; padding: 10px 14px; border-radius: 22px; background: #fff; border: 2.5px dashed var(--pink); color: var(--pink); font: 800 15px 'Pretendard Variable';
+    box-shadow: 0 6px 18px rgba(255,90,138,.3); animation: wob 1s infinite alternate; }
+  @keyframes wob { from { transform: rotate(-4deg) scale(1); } to { transform: rotate(4deg) scale(1.06); } }
+  .stat { display: flex; justify-content: space-around; font-size: 12px; color: var(--ink2); text-align: center; padding: 0 10px 10px; }
+  .stat b { display: block; font: 400 21px 'Black Han Sans'; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .shop { background: var(--dark); color: #fff; padding: 12px 12px 16px; }
+  .shop h4 { font-size: 13px; color: #bdb6a8; margin-bottom: 4px; display: flex; justify-content: space-between; font-weight: 700; }
+  .shop h4 b { color: #ff8db0; font-size: 15px; }
+  .it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--dark2); border-radius: 10px; padding: 8px 10px; margin-top: 6px; transition: background .15s; }
+  .it:active { background: #3a3832; }
+  .it .ic { font-size: 22px; width: 30px; text-align: center; }
+  .it .nm { flex: 1; font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+  .it .nm small { display: block; font-weight: 500; color: #bdb6a8; font-size: 11.5px; }
+  .it .lv { font-size: 11px; color: #ff8db0; margin-left: 3px; }
+  .it .pr { font: 800 13px 'Pretendard Variable'; background: var(--pink); color: #fff; border-radius: 14px; padding: 5px 10px; white-space: nowrap; }
+  .it.no .pr { background: #55524a; color: #cfc8ba; }
+  .it.lock { opacity: .45; } .it.lock .pr { background: #55524a; }
+  .it.done .pr { background: #1f9d7a; }
+
+  /* 결과 */
+  .crown { text-align: center; font: 400 26px 'Black Han Sans'; color: var(--red); margin-top: 6px; }
+  .one { text-align: center; font: 400 128px/1 'Black Han Sans'; }
+  .one small { font-size: 46px; }
+  .song { text-align: center; font: 800 15px 'Pretendard Variable'; color: var(--ink2); letter-spacing: .08em; }
+  .pen { text-align: center; font: 400 31px 'Nanum Pen Script'; color: var(--red); margin: 8px 0 14px; }
+  .rt { width: 100%; border-collapse: collapse; border: 2px solid var(--ink); font-size: 14.5px; }
+  .rt td { border-top: 1px solid var(--line); padding: 10px 12px; }
+  .rt td:last-child { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .rt .hd td { background: var(--ink); color: #fff; font-weight: 800; }
+  .rt .big td:last-child { font: 400 26px 'Black Han Sans'; color: var(--red); }
+  .srv { margin-top: 10px; padding: 10px 12px; font-size: 13.5px; line-height: 1.6; border-left: 4px solid var(--pink); background: var(--pink2); }
+  .srv.bad { border-color: #e08a00; background: #fff3e0; }
+  .tl { margin: 14px 0; font-size: 12.5px; line-height: 1.8; color: #3d3a33; border-left: 3px solid var(--pink); padding-left: 10px; }
+  .tl b { display: inline-block; width: 70px; font-variant-numeric: tabular-nums; }
+  .share { margin-top: 16px; border: 1.5px dashed var(--ink); padding: 14px; background: #fffaf2; }
+  .share h4 { font-size: 16px; margin-bottom: 4px; }
+  .share p { font-size: 13.5px; line-height: 1.6; color: var(--ink2); }
+  #imgWrap { margin-top: 12px; text-align: center; }
+  #imgWrap img { width: 100%; max-width: 340px; border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+  #imgWrap p { font-size: 12.5px; color: var(--ink2); margin-top: 6px; }
+  #stop { position: fixed; inset: 0; z-index: 40; background: rgba(27,26,23,.7); display: flex; align-items: center; justify-content: center; }
+  #stop .box { background: var(--paper); width: min(340px, 88%); padding: 22px; text-align: center; border-top: 6px solid #e08a00; }
+  #stop .box b { font: 400 26px 'Black Han Sans'; display: block; color: #b56a00; }
+  #stop .box p { font-size: 14px; line-height: 1.6; color: var(--ink2); margin: 10px 0 4px; }
+  .foot { margin-top: 18px; font-size: 12px; color: #9a9384; line-height: 1.6; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 시작 -->
+  <section id="start" class="pad">
+    <div class="kick">RESCENE · 정주행 클리커 · 비공식 팬 게임</div>
+    <h1 class="ttl">‘WITH’<br><em>1위</em> 만들기</h1>
+    <p class="sub">11월 3일 컴백, 타이틀곡 ‘WITH’가 차트에 들어왔다.<br>연타하고 응원 아이템을 모아 1위까지 올려 주세요.<br><b style="color:var(--ink)">누가 제일 빨리 1위를 만드는지</b> 순위표에서 겨뤄요.</p>
+    <div class="graph">
+      <svg viewBox="0 0 350 120" preserveAspectRatio="none"><polyline points="0,112 70,96 140,74 200,58 250,40 300,22 345,4" fill="none" stroke="#d6332a" stroke-width="3"/></svg>
+      <span style="left:4px;top:90px">200위</span><span style="left:126px;top:52px">TOP 100</span><span style="left:240px;top:18px">TOP 10</span><span style="right:2px;top:-15px;color:#d6332a">1위!</span>
+    </div>
+    <label class="nameBox" id="nameBox"><span>닉네임</span><input id="nick" type="text" maxlength="10" autocomplete="off" spellcheck="false" placeholder="순위표에 올라갈 이름"></label>
+    <p class="hint">닉네임과 기록만 순위표에 올라가요. 비속어는 쓸 수 없어요.</p>
+    <button class="btn pri" id="go">스밍 시작 ▶</button>
+    <div class="rules">
+      ○ <b>시간은 서버가 재요.</b> 시작을 누른 순간부터 1위가 될 때까지예요.<br>
+      ○ 연타는 1초에 15번까지만 세요. <b>매크로 · 오토클릭</b>처럼 간격이 일정하거나 같은 점만 누르면 순위표에 올라가지 않아요.<br>
+      ○ 다른 탭으로 나가 있는 동안엔 자동 스밍도 멈춰요(시간은 흘러요).
+    </div>
+    <div class="board" id="board1"></div>
+    <p class="foot">비공식 팬 패러디 게임 · 실제 음원 차트와 관계없습니다 · 닉네임 · 기록 · 기기 번호(무작위)만 저장</p>
+  </section>
+
+  <!-- 게임 -->
+  <section id="game" hidden>
+    <div class="top">
+      <div class="r1"><span class="kick">멜론 실시간 차트 (가상) · WITH</span><span class="clock" id="clock">0:00.0</span></div>
+      <div class="r2"><div class="rank" id="rank">200<small>위</small></div><div class="up" id="up">▲ 0계단<small>시작 200위</small></div></div>
+      <div class="chart" id="chart"></div>
+      <div class="chart-cap"><span>가상 차트 · 다른 곡 · 가수는 지어낸 이름</span><span id="passed">추월 0곡</span></div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="meta"><span id="goal">다음 목표: TOP 100 진입</span><span id="pct"></span></div>
+    </div>
+    <div class="ev" id="ev"><b>11.03 18:00 · 발매!</b> ‘WITH’가 차트 200위로 들어왔어요. 아래 ▶를 연타!</div>
+    <div class="tapz" id="tapz">
+      <button id="tap" type="button" aria-label="스밍"><span class="pl">▶</span><small>스밍</small></button>
+    </div>
+    <div id="stop" hidden><div class="box"><b>매크로 의심으로 중지</b><p>탭 간격이 거의 똑같은 채로 100번 이어졌어요.<br>오토클릭 · 매크로는 순위표에 올라가지 않아요.</p>
+      <div class="btns"><button class="btn pri" id="stopAgain">다시 시작</button><button class="btn sm" id="stopHome">처음으로</button></div></div></div>
+    <div class="stat"><div><b id="sTot">0</b>누적 스밍</div><div><b id="sTap">+1</b>탭당</div><div><b id="sSec">+0</b>초당 자동</div></div>
+    <div class="shop">
+      <h4><span>응원 아이템</span><span>하트 <b id="heart">♥ 0</b></span></h4>
+      <div id="items"></div>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section id="result" class="pad" hidden>
+    <div class="crown">♛ 실시간 차트</div>
+    <div class="one">1<small>위</small></div>
+    <div class="song">RESCENE · ‘WITH’</div>
+    <div class="pen">“이게 다 리마인 덕분이야”</div>
+    <table class="rt">
+      <tr class="hd"><td id="rName"></td><td>1위 달성</td></tr>
+      <tr class="big"><td>1위까지 걸린 시간</td><td id="rTime"></td></tr>
+      <tr><td>탭한 횟수</td><td id="rTaps"></td></tr>
+      <tr><td>누적 스밍</td><td id="rTot"></td></tr>
+      <tr><td>칭호</td><td id="rTitle"></td></tr>
+    </table>
+    <div class="srv" id="srv">순위표에 기록을 올리는 중…</div>
+    <div class="tl" id="tl"></div>
+    <div class="share">
+      <h4>컨갤에 인증하기</h4>
+      <p id="shareHow"></p>
+      <div id="imgWrap"><img id="rImg" alt="정주행 클리커 결과 이미지"><p id="imgNote">결과 이미지를 만드는 중…</p></div>
+      <div class="btns">
+        <button class="btn red" id="toGall">컨갤 글쓰기 열기</button>
+        <button class="btn" id="shareImg" hidden>결과 이미지 공유하기 (앱 고르기)</button>
+        <div class="row2"><a class="btn sm" id="dlImg" download="WITH_1위_기록.png">이미지 저장</a><button class="btn sm" id="copyTxt">결과 문구 복사</button></div>
+      </div>
+    </div>
+    <div class="board" id="board2"></div>
+    <div class="btns"><button class="btn pri" id="again">다시 도전 (기록 단축)</button><button class="btn sm" id="home">처음으로</button></div>
+  </section>
+</div>
+<div id="toast" role="status"></div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://127.0.0.1:8799" : "https://rescene-games.get943.workers.dev";
+  const URL0 = location.href.split(/[?#]/)[0];
+  const GALL_PC = "https://gall.dcinside.com/mgallery/board/write/?id=kpopcontent", GALL_M = "https://m.dcinside.com/write/kpopcontent";
+  const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 2400); };
+  const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const fmt = n => Math.floor(n).toLocaleString("ko-KR");
+  const fmtT = ms => { const s = ms / 1000, m = Math.floor(s / 60); return m + ":" + (s - m * 60).toFixed(2).padStart(5, "0"); };
+  const cleanNick = v => v.replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 10);
+  // 기기 번호 — 순위표에서 '내 기록'을 찾는 데만 씀(무작위, 개인정보 아님)
+  let DEV = ls.get("with-dev");
+  if (!DEV || !/^[A-Za-z0-9_-]{16,64}$/.test(DEV)) { const b = new Uint8Array(18); crypto.getRandomValues(b); DEV = btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); ls.set("with-dev", DEV); }
+
+  /* ── 차트 순위: 누적 스밍 S → 순위 (200위에서 시작, 약 12만 스밍에 1위) ── */
+  const R0 = 200, C = 40, P = 0.662;
+  const rankOf = S => Math.max(1, Math.ceil(R0 / Math.pow(1 + S / C, P)));
+  const needFor = r => C * (Math.pow(R0 / r, 1 / P) - 1); // r위가 되는 최소 스밍 (근사)
+  const MILE = [
+    [100, "TOP 100 진입", "첫날부터 TOP 100! 리마인들의 스밍이 통했어요."],
+    [50, "TOP 50", "쇼케이스를 본 사람들이 몰려와요."],
+    [30, "TOP 30", "‘거제 야호 챌린지’ 아이템이 열렸어요!"],
+    [10, "TOP 10", "이제부터는 한 계단이 무거워요."],
+    [5, "TOP 5", "1위 후보 소리가 들리기 시작해요."],
+    [3, "3위", "음방 1위 후보 예감."],
+    [2, "2위", "1위가 바로 눈앞이에요!"],
+    [1, "1위", "WITH 실시간 1위!"],
+  ];
+
+  /* ── 가상 차트: 순위 자리마다 지어낸 곡 하나 (실제 곡 · 가수 아님) ── */
+  const T1 = ["여름", "새벽", "파란", "종이", "작은", "늦은", "하얀", "두 번째", "빛나는", "조용한", "낡은", "먼", "따뜻한", "기울어진", "반쯤 열린", "오래된"];
+  const T2 = ["정류장", "편지", "고백", "궤도", "우산", "오후", "계단", "산책", "불꽃", "약속", "엽서", "섬", "주파수", "창문", "필름", "골목"];
+  const TE = ["Paper Plane", "Moonwalk", "Neon Tide", "Slow Dive", "Lemon Haze", "Afterglow", "Static", "Blue Hour", "Sugar Rush", "Daydream", "Night Drive", "Glass Heart", "Velvet", "Polaroid", "Firefly", "Echo Park"];
+  const AR = ["오로라웨이브", "블루하버", "NOVA9", "새벽세탁소", "모노레일", "루시드밤", "하이틴클럽", "온도차", "SEOULITE", "레몬카세트", "PRISMA", "구름정원", "오렌지필름", "스텔라맵", "밤산책", "KODA", "유리온실", "M.I.N.T", "플랫폼7", "백색소음단"];
+  const COV = ["#5b7c99", "#b07a5a", "#6a8f6b", "#8a6aa8", "#c4914a", "#4f6d8f", "#9b5f6f", "#3f7f7a", "#a8854f", "#6b6f9e"];
+  function songAt(k) { // k위에 원래 있던 곡 (WITH 가 오기 전)
+    let h = (k * 0x9E3779B1 ^ 0x5bd1e995) >>> 0;
+    const p = n => { h = (h + 0x6D2B79F5) >>> 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) % n; };
+    const title = p(3) === 0 ? TE[p(TE.length)] : T1[p(T1.length)] + " " + T2[p(T2.length)];
+    return { t: title, a: AR[p(AR.length)], c: COV[p(COV.length)], s: (k % 7 === 0 ? 1 : k % 11 === 0 ? -1 : 0) };
+  }
+  let chartRank = 0;
+  function renderChart(r, moved) {
+    // r 위 두 곡은 제자리, r 아래 곡들은 WITH 에게 추월당해 한 칸씩 밀림(▼1)
+    const rows = [];
+    for (let k = r - 2; k <= r + 2; k++) {
+      if (k < 1 || k > R0 + 2) continue;
+      if (k === r) { rows.push(`<div class="cr with${moved ? " rise" : ""}"><span class="no">${k}</span><span class="ch u">${G.startRank - r > 0 ? "▲" + (G.startRank - r) : "NEW"}</span><span class="cv" style="background:linear-gradient(135deg,#ff5a8a,#d6332a)">W</span><span class="tt"><b>WITH</b><small>RESCENE (리센느)</small></span></div>`); continue; }
+      const passed = k > r && k <= G.startRank;
+      const s = songAt(passed ? k - 1 : k);
+      const ch = passed ? '<span class="ch d">▼1</span>' : s.s > 0 ? '<span class="ch u">▲1</span>' : s.s < 0 ? '<span class="ch d">▼1</span>' : '<span class="ch s">–</span>';
+      rows.push(`<div class="cr${moved && k === r + 1 ? " drop" : ""}"><span class="no">${k}</span>${ch}<span class="cv" style="background:${s.c}">${s.t[0]}</span><span class="tt"><b></b><small></small></span></div>`);
+      rows[rows.length - 1] = rows[rows.length - 1].replace("<b></b><small></small>", "<b>" + s.t + "</b><small>" + s.a + "</small>");
+    }
+    $("#chart").innerHTML = rows.join("");
+    $("#passed").textContent = "추월 " + (G.startRank - r) + "곡";
+    chartRank = r;
+  }
+
+  /* ── 응원 아이템 ── */
+  const ITEMS = [
+    { id: "ear", ic: "🎧", nm: "좋은 이어폰", d: "탭당 스밍 +1", c: 15, tap: 1 },
+    { id: "fr", ic: "👯", nm: "리마인 친구 초대", d: "초당 +1 · 같이 스밍해 줄 친구", c: 40, sec: 1 },
+    { id: "live", ic: "📺", nm: "새벽 라방 켜기", d: "초당 +6 · 라방 보다 입덕", c: 300, sec: 6 },
+    { id: "stage", ic: "🎤", nm: "음방 무대 직캠", d: "초당 +30 · 무대 보고 유입", c: 2000, sec: 30, need: 120 },
+    { id: "ch", ic: "🎬", nm: "원이 채널 새 영상", d: "초당 +120 · 안원잘부 효과", c: 9000, sec: 120, need: 60 },
+    { id: "yaho", ic: "✌️", nm: "거제 야호 챌린지", d: "모든 스밍 ×2 (한 번만)", c: 30000, once: true, need: 30 },
+    { id: "show", ic: "🏆", nm: "쇼케이스 영상 역주행", d: "초당 +500", c: 60000, sec: 500, need: 10 },
+  ];
+  const GROW = 1.15;
+  const costOf = (it, lv) => Math.ceil(it.c * Math.pow(GROW, lv));
+
+  /* ── 매크로 검사 (서버 macroVerdict 와 같은 기준) ──
+     탭 간격이 '거의 같은'(이어진 간격 평균의 ±4%, 최소 ±4ms) 채로 20번 이어지면 경고, 100번이면 중지. 600ms 넘게 쉬면 처음부터. */
+  const SAME_WARN = 20, SAME_STOP = 100;
+  function sameStep(st, d) {
+    if (!(d > 0 && d < 600)) { st.n = 0; return st; }
+    if (st.n && Math.abs(d - st.mean) <= Math.max(4, st.mean * 0.04)) { st.mean = (st.mean * st.n + d) / (st.n + 1); st.n++; }
+    else { st.n = 1; st.mean = d; }
+    return st;
+  }
+  function macroCheck(iv, pts) {
+    if (pts.length >= 30) {
+      const c = new Map(); for (const [x, y] of pts) { const k = x + "," + y; c.set(k, (c.get(k) || 0) + 1); }
+      if (Math.max(...c.values()) / pts.length > 0.6) return "계속 똑같은 점만 눌렸어요";
+    }
+    return null;
+  }
+
+  let G = null, raf = 0;
+  function show(id) { ["start", "game", "result"].forEach(x => $("#" + x).hidden = x !== id); window.scrollTo(0, 0); }
+
+  async function api(path, body) {
+    const r = await fetch(API + path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.error || "서버 오류"); e.status = r.status; e.body = j; throw e; }
+    return j;
+  }
+
+  /* ── 시작 ── */
+  async function start() {
+    const v = cleanNick($("#nick").value);
+    if (!v) { $("#nameBox").classList.add("need"); $("#nick").focus(); toast("닉네임을 먼저 써 주세요."); return; }
+    $("#nick").value = v; ls.set("with-nick", v);
+    $("#go").disabled = $("#again").disabled = true;
+    let run = null;
+    try { run = (await api("/climb/start", { dev: DEV })).run; }
+    catch (e) { toast(e.status === 429 ? e.message : "순위표 서버에 연결하지 못했어요. 이번 판은 연습으로 진행해요."); }
+    $("#go").disabled = $("#again").disabled = false;
+    G = { run, name: v, t0: performance.now(), S: 0, H: 0, taps: 0, lv: {}, yaho: false, boostUntil: 0, rank: R0, startRank: R0, last: performance.now(),
+          iv: [], pts: [], lastTap: 0, recent: [], macro: null, same: { n: 0, mean: 0 }, warns: 0, tl: [[0, "200위로 첫 진입"]], mileIdx: 0, goldAt: performance.now() + 35000 + Math.random() * 20000, done: false };
+    ITEMS.forEach(it => G.lv[it.id] = 0); chartRank = 0;
+    renderItems(); show("game"); hud(true);
+    setEv("<b>11.03 18:00 · 발매!</b> ‘WITH’가 차트 200위로 들어왔어요. 아래 ▶를 연타!");
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+  }
+
+  const tapPow = () => (1 + ITEMS.reduce((a, it) => a + (it.tap || 0) * G.lv[it.id], 0)) * mult();
+  const secPow = () => ITEMS.reduce((a, it) => a + (it.sec || 0) * G.lv[it.id], 0) * mult();
+  const FAST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? Math.max(1, +new URLSearchParams(location.search).get("fast") || 1) : 1; // 시험용 — 사이트에선 항상 1
+  const mult = () => (G.yaho ? 2 : 1) * (performance.now() < G.boostUntil ? 5 : 1) * FAST;
+
+  function gain(n) { G.S += n; G.H += n; }
+
+  /* ── 탭: 사람의 누름만(isTrusted), 1초에 15번까지 ── */
+  $("#tap").addEventListener("pointerdown", e => {
+    e.preventDefault();
+    if (!G || G.done || !e.isTrusted) return;
+    const now = performance.now();
+    G.recent = G.recent.filter(t => now - t < 1000);
+    if (G.recent.length >= 15) return;
+    G.recent.push(now);
+    if (G.lastTap) {
+      const d = Math.round(now - G.lastTap); G.iv.push(d);
+      sameStep(G.same, d);
+      if (G.same.n >= SAME_STOP) return macroStop();
+      if (G.same.n === SAME_WARN) { G.warns++; setEv("<b>의심!</b> 탭 간격이 거의 같은 채로 " + SAME_WARN + "번 넘게 이어졌어요. " + SAME_STOP + "번이 되면 매크로로 보고 게임이 멈춰요.", true); }
+    }
+    G.lastTap = now; G.taps++;
+    const r = e.currentTarget.getBoundingClientRect();
+    if (G.taps % 10 === 0) G.pts.push([Math.round(e.clientX - r.left), Math.round(e.clientY - r.top)]);
+    const p = tapPow(); gain(p);
+    const tb = $("#tap"); tb.classList.add("dn"); setTimeout(() => tb.classList.remove("dn"), 70);
+    const z = $("#tapz").getBoundingClientRect(), f = document.createElement("div");
+    f.className = "fl"; f.textContent = "+" + fmt(p);
+    f.style.left = (e.clientX - z.left + (Math.random() * 40 - 20)) + "px"; f.style.top = (e.clientY - z.top - 30) + "px";
+    $("#tapz").appendChild(f); setTimeout(() => f.remove(), 700);
+    if (G.taps % 25 === 0 && !G.macro) {
+      const m = macroCheck(G.iv, G.pts);
+      if (m) { G.macro = m; setEv("<b>매크로 의심</b> — " + m + ". 이번 판은 순위표에 올라가지 않아요.", true); }
+    }
+  }, { passive: false });
+  $("#tap").addEventListener("contextmenu", e => e.preventDefault());
+
+  /* 매크로 중지 — 이 판은 끝, 순위표에 안 올라감 */
+  function macroStop() {
+    G.done = true; G.macro = "탭 간격이 거의 같은 채로 " + SAME_STOP + "번 이어졌어요"; cancelAnimationFrame(raf);
+    setEv("<b>매크로 의심 — 중지</b> " + G.macro + ". 이번 판은 순위표에 올라가지 않아요.", true);
+    $("#stop").hidden = false;
+  }
+  function setEv(html, warn) { const ev = $("#ev"); ev.innerHTML = html; ev.classList.toggle("warn", !!warn); }
+
+  /* ── 아이템 ── */
+  function renderItems() {
+    $("#items").innerHTML = ITEMS.map(it => `<button class="it" id="it-${it.id}" type="button"><span class="ic">${it.ic}</span><span class="nm">${it.nm}<span class="lv"></span><small>${it.d}</small></span><span class="pr"></span></button>`).join("");
+    ITEMS.forEach(it => $("#it-" + it.id).addEventListener("click", () => buy(it)));
+    syncItems();
+  }
+  function buy(it) {
+    if (!G || G.done) return;
+    if (it.need && G.rank > it.need) return toast(it.need + "위 안에 들면 열려요.");
+    if (it.once && G.lv[it.id]) return;
+    const c = costOf(it, it.once ? 0 : G.lv[it.id]);
+    if (G.H < c) return toast("하트가 " + fmt(c - G.H) + "개 모자라요.");
+    G.H -= c; G.lv[it.id]++;
+    if (it.id === "yaho") { G.yaho = true; setEv("<b>거제 야호~!</b> 챌린지가 퍼지면서 모든 스밍이 2배가 됐어요."); }
+    syncItems(); hud();
+  }
+  function syncItems() {
+    ITEMS.forEach(it => {
+      const el = $("#it-" + it.id); if (!el) return;
+      const lock = it.need && G.rank > it.need, done = it.once && G.lv[it.id];
+      const c = costOf(it, it.once ? 0 : G.lv[it.id]);
+      el.classList.toggle("lock", !!lock); el.classList.toggle("done", !!done); el.classList.toggle("no", !lock && !done && G.H < c);
+      el.querySelector(".lv").textContent = !it.once && G.lv[it.id] ? "Lv " + G.lv[it.id] : "";
+      el.querySelector(".pr").textContent = done ? "완료" : lock ? "🔒 " + it.need + "위" : "♥ " + fmt(c);
+    });
+  }
+
+  /* ── 황금 말풍선: 잠깐 나타나 누르면 10초 동안 5배 ── */
+  function spawnGold() {
+    const z = $("#tapz"), g = document.createElement("button");
+    g.id = "gold"; g.type = "button"; g.textContent = "✌ 거제 야호! ×5";
+    const w = z.clientWidth, h = z.clientHeight;
+    const left = Math.random() < .5 ? 8 + Math.random() * (w / 2 - 150) : w / 2 + 100 + Math.random() * Math.max(0, w / 2 - 250);
+    g.style.left = Math.max(6, Math.min(w - 150, left)) + "px"; g.style.top = (10 + Math.random() * (h - 60)) + "px";
+    g.addEventListener("pointerdown", e => {
+      e.preventDefault(); if (!e.isTrusted || !G || G.done) return;
+      G.boostUntil = performance.now() + 10000; g.remove(); $("#tap").classList.add("boost");
+      setEv("<b>야호 타임!</b> 10초 동안 모든 스밍 ×5");
+    });
+    z.appendChild(g); setTimeout(() => g.remove(), 7000);
+  }
+
+  /* ── 매 프레임 ── */
+  function loop(now) {
+    raf = requestAnimationFrame(loop);
+    if (!G || G.done) return;
+    const dt = Math.min(0.25, (now - G.last) / 1000); G.last = now; // 탭을 떠나 있던 동안은 자동 스밍 없음
+    gain(secPow() * dt);
+    if (now > G.goldAt) { spawnGold(); G.goldAt = now + 40000 + Math.random() * 30000; }
+    if (now > G.boostUntil) $("#tap").classList.remove("boost");
+    hud();
+  }
+
+  let lastItemSync = 0;
+  function hud(force) {
+    const now = performance.now(), el = now - G.t0;
+    $("#clock").textContent = fmtT(el).slice(0, -1);
+    const r = rankOf(G.S);
+    if (r < G.rank) {
+      const rk = $("#rank"); rk.classList.remove("bump"); void rk.offsetWidth; rk.classList.add("bump");
+      while (G.mileIdx < MILE.length && r <= MILE[G.mileIdx][0]) {
+        const m = MILE[G.mileIdx]; G.tl.push([el, m[1]]);
+        setEv("<b>" + m[1] + "!</b> " + m[2]); G.mileIdx++;
+      }
+      G.rank = r; force = true;
+    }
+    $("#rank").innerHTML = G.rank + "<small>위</small>";
+    if (chartRank !== G.rank || force === "init") renderChart(G.rank, chartRank && chartRank !== G.rank);
+    $("#up").innerHTML = "▲ " + (R0 - G.rank) + "계단<small>시작 200위</small>";
+    const nx = MILE[G.mileIdx];
+    if (nx) {
+      const prev = G.mileIdx ? MILE[G.mileIdx - 1][0] : R0;
+      const a = needFor(prev), b = needFor(nx[0]);
+      const p = Math.max(0, Math.min(1, (G.S - (G.mileIdx ? a : 0)) / (b - (G.mileIdx ? a : 0))));
+      $("#bar").style.width = (p * 100).toFixed(1) + "%";
+      $("#goal").textContent = "다음 목표: " + nx[1];
+      $("#pct").textContent = Math.floor(p * 100) + "%";
+    }
+    $("#sTot").textContent = fmt(G.S);
+    $("#sTap").textContent = "+" + fmt(tapPow());
+    $("#sSec").textContent = "+" + fmt(secPow());
+    $("#heart").textContent = "♥ " + fmt(G.H);
+    if (force || now - lastItemSync > 150) { syncItems(); lastItemSync = now; }
+    if (G.rank === 1) finish();
+  }
+
+  /* ── 1위 ── */
+  const titleOf = ms => ms < 200000 ? "스밍의 신" : ms < 260000 ? "차트 지배자" : ms < 330000 ? "총공 대장" : ms < 420000 ? "든든한 스밍러" : ms < 600000 ? "성실 리마인" : "느긋한 리마인";
+  async function finish() {
+    G.done = true; cancelAnimationFrame(raf);
+    G.ms = performance.now() - G.t0;
+    $("#rName").textContent = G.name;
+    $("#rTime").textContent = fmtT(G.ms);
+    $("#rTaps").textContent = fmt(G.taps) + "번";
+    $("#rTot").textContent = fmt(G.S);
+    $("#rTitle").textContent = titleOf(G.ms);
+    $("#tl").innerHTML = G.tl.map(([t, s]) => "<b>" + fmtT(t).slice(0, -3) + "</b>" + s).join("<br>");
+    show("result");
+    const srv = $("#srv"); srv.classList.remove("bad");
+    G.server = null;
+    if (G.macro) { srv.classList.add("bad"); srv.innerHTML = "<b>매크로 의심</b> — " + G.macro + ". 이번 기록은 순위표에 올리지 않았어요."; }
+    else if (!G.run) { srv.classList.add("bad"); srv.textContent = "순위표 서버에 연결되지 않은 판이라 연습 기록으로 남았어요."; }
+    else {
+      srv.textContent = "순위표에 기록을 올리는 중…";
+      try {
+        const r = await api("/climb/finish", { run: G.run, dev: DEV, name: G.name, taps: G.taps, iv: G.iv, pts: G.pts });
+        G.server = r; G.ms = r.ms; $("#rTime").textContent = fmtT(r.ms); $("#rTitle").textContent = titleOf(r.ms);
+        srv.innerHTML = "서버 기록 <b>" + fmtT(r.ms) + "</b> · 이번 판만 따지면 전체 <b>" + r.runRank + "위</b> 기록이에요.<br>"
+          + (r.isBest ? "🎉 <b>내 최고 기록 경신!</b> " : "내 최고 기록 " + fmtT(r.best) + " · ")
+          + "전체 " + r.total + "명 중 <b>" + r.rank + "위</b> · 오늘 " + r.ttotal + "명 중 <b>" + r.trank + "위</b>";
+      } catch (e) {
+        srv.classList.add("bad"); srv.textContent = e.message || "기록을 올리지 못했어요.";
+      }
+    }
+    prepShare(); loadBoard("#board2", G.server && G.server.isTodayBest ? "today" : "all");
+  }
+
+  /* ── 순위표 ── */
+  const boardScope = { "#board1": "today", "#board2": "all" };
+  async function loadBoard(sel, scope) {
+    boardScope[sel] = scope || boardScope[sel];
+    const box = $(sel), sc = boardScope[sel];
+    box.innerHTML = `<div class="hd"><b>순위표</b><div class="tabs"><button data-s="today" aria-pressed="${sc === "today"}">오늘</button><button data-s="all" aria-pressed="${sc === "all"}">전체</button></div></div><div class="empty">불러오는 중…</div>`;
+    box.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => loadBoard(sel, b.dataset.s)));
+    try {
+      const d = await api("/climb/top?scope=" + sc + "&dev=" + encodeURIComponent(DEV));
+      const rows = d.rows.map((r, i) => `<li class="${r.me ? "me" : ""}"><span class="r">${i + 1}</span><span class="n"></span><span class="t">${fmtT(r.ms)}</span></li>`).join("");
+      box.querySelector(".empty").remove();
+      if (!d.rows.length) box.insertAdjacentHTML("beforeend", `<div class="empty">${sc === "today" ? "오늘은 아직 기록이 없어요. 첫 1위를 만들어 보세요!" : "아직 기록이 없어요."}</div>`);
+      else {
+        box.insertAdjacentHTML("beforeend", "<ol>" + rows + "</ol>");
+        box.querySelectorAll("li .n").forEach((n, i) => n.textContent = d.rows[i].name);
+      }
+      box.insertAdjacentHTML("beforeend", `<div class="mine">${d.mine ? "내 기록 <b>" + fmtT(d.mine.ms) + "</b> · " + d.total + "명 중 <b>" + d.mine.rank + "위</b>" : (sc === "today" ? "오늘 " : "") + d.total + "명이 1위를 만들었어요"}</div>`);
+    } catch (e) {
+      const em = box.querySelector(".empty"); if (em) em.textContent = "순위표를 불러오지 못했어요.";
+    }
+  }
+
+  /* ── 결과 이미지 · 공유 ── */
+  const MOB = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  const CLIP_IMG = !MOB && !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
+  let imgBlob = null, imgJob = null;
+  const text = () => "[정주행 클리커 · WITH 1위] " + G.name + " · " + fmtT(G.ms) + " 만에 1위 (" + titleOf(G.ms) + ")"
+    + (G.server ? " · 전체 " + G.server.rank + "위" : "") + "\n탭 " + fmt(G.taps) + "번 · 누적 스밍 " + fmt(G.S) + "\n나도 1위 만들기 → " + URL0;
+  async function copy(t) {
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+    const ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove(); return ok;
+  }
+  async function makeImage() {
+    try { await Promise.all(["400 80px 'Black Han Sans'", "400 50px 'Nanum Pen Script'", "800 30px 'Pretendard Variable'"].map(f => document.fonts.load(f, "WITH 1위 만들기 0123456789 리마인"))); } catch (e) {}
+    const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
+    x.fillStyle = "#e6e0d4"; x.fillRect(0, 0, W, H);
+    x.save(); x.shadowColor = "rgba(0,0,0,.15)"; x.shadowBlur = 30; x.shadowOffsetY = 10; x.fillStyle = "#fffdf8"; x.fillRect(70, 70, W - 140, H - 140); x.restore();
+    x.fillStyle = "#1b1a17"; x.textAlign = "left"; x.font = "700 26px 'Pretendard Variable'"; x.fillText("RESCENE · 정주행 클리커", 130, 165);
+    x.font = "400 92px 'Black Han Sans'"; x.fillText("‘WITH’", 130, 270); x.fillStyle = "#d6332a"; x.fillText("1위", 130, 375);
+    x.fillStyle = "#1b1a17"; x.fillText(" 만들기", 130 + x.measureText("1위").width, 375);
+    x.fillRect(130, 415, W - 260, 4);
+    x.font = "800 34px 'Pretendard Variable'"; x.fillText(G.name, 130, 485);
+    x.fillStyle = "#6b665c"; x.font = "700 26px 'Pretendard Variable'"; x.fillText("1위까지 걸린 시간", 130, 560);
+    x.fillStyle = "#1b1a17"; x.font = "400 150px 'Black Han Sans'"; x.fillText(fmtT(G.ms), 122, 715);
+    x.fillStyle = "#d6332a"; x.font = "400 60px 'Nanum Pen Script'"; x.fillText(titleOf(G.ms) + (G.server ? " · 전체 " + G.server.rank + "위" : ""), 130, 800);
+    const rows = [["탭한 횟수", fmt(G.taps) + "번"], ["누적 스밍", fmt(G.S)], ["순위표", G.server ? G.server.total + "명 중 " + G.server.rank + "위" : "연습 기록"]];
+    let y = 900;
+    rows.forEach(r => { x.fillStyle = "#e3ddd0"; x.fillRect(130, y - 46, W - 260, 2); x.fillStyle = "#1b1a17"; x.textAlign = "left"; x.font = "600 32px 'Pretendard Variable'"; x.fillText(r[0], 130, y);
+      x.textAlign = "right"; x.font = "800 34px 'Pretendard Variable'"; x.fillText(r[1], W - 130, y); y += 78; });
+    x.save(); x.translate(840, 245); x.rotate(-.14); x.strokeStyle = "#d6332a"; x.lineWidth = 6; x.beginPath(); x.arc(0, 0, 92, 0, Math.PI * 2); x.stroke();
+    x.lineWidth = 2; x.beginPath(); x.arc(0, 0, 80, 0, Math.PI * 2); x.stroke(); x.fillStyle = "#d6332a"; x.textAlign = "center";
+    x.font = "400 70px 'Black Han Sans'"; x.fillText("1위", 0, 20); x.font = "800 18px 'Pretendard Variable'"; x.fillText("실시간 차트", 0, 52); x.restore();
+    x.textAlign = "left"; x.fillStyle = "#1b1a17"; x.font = "700 26px 'Pretendard Variable'"; x.fillText("나도 1위 만들기", 130, 1170);
+    x.font = "800 28px 'Pretendard Variable'"; x.fillText(URL0.replace(/^https?:\/\//, ""), 130, 1212);
+    x.font = "400 20px 'Pretendard Variable'"; x.fillStyle = "#9a9384"; x.fillText("비공식 팬 패러디 게임 · 실제 음원 차트와 관계없음", 130, 1250);
+    return cv;
+  }
+  function prepShare() {
+    imgBlob = null; $("#rImg").removeAttribute("src"); $("#imgNote").textContent = "결과 이미지를 만드는 중…"; $("#shareImg").hidden = true;
+    $("#shareHow").innerHTML = CLIP_IMG
+      ? "빨간 버튼을 누르면 <b>결과 이미지가 자동으로 복사</b>되고 컨갤 글쓰기 창이 열려요. 본문에서 <b>Ctrl+V</b> 하면 이미지가 들어가요."
+      : "① <b>이미지 저장</b>(또는 길게 눌러 저장) → ② 빨간 버튼으로 글쓰기를 열면 문구가 복사돼요 → ③ 붙여넣고 사진 첨부로 이미지를 넣으세요.";
+    $("#toGall").textContent = CLIP_IMG ? "컨갤 글쓰기 열기 (결과 이미지 자동 복사)" : "컨갤 글쓰기 열기 (결과 문구 자동 복사)";
+    imgJob = makeImage().then(cv => new Promise(res => cv.toBlob(b => {
+      imgBlob = b; const url = URL.createObjectURL(b); $("#rImg").src = url; $("#dlImg").href = url;
+      $("#imgNote").textContent = MOB ? "이미지를 길게 눌러 저장할 수도 있어요." : "이 이미지가 글에 들어가요.";
+      const f = new File([b], "WITH_1위_기록.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { $("#shareImg").hidden = false; $("#shareImg").onclick = () => navigator.share({ files: [f], text: text() }).catch(() => {}); }
+      res(b);
+    }, "image/png")));
+  }
+  $("#copyTxt").addEventListener("click", async () => toast(await copy(text()) ? "결과 문구를 복사했어요." : "복사가 안 되면 직접 복사해 주세요."));
+  $("#toGall").addEventListener("click", async () => {
+    const go = MOB ? GALL_M : GALL_PC; let ok = false;
+    if (CLIP_IMG) { try { await navigator.clipboard.write([new ClipboardItem({ "image/png": imgBlob || imgJob })]); ok = true; } catch (e) {} }
+    else ok = await copy(text());
+    const w = window.open(go, "_blank"); if (w) { try { w.opener = null; } catch (e) {} }
+    toast(CLIP_IMG ? (ok ? "결과 이미지를 복사했어요. 글쓰기 본문에서 Ctrl+V!" : "이미지 복사가 막혔어요. ‘이미지 저장’ 후 첨부해 주세요.")
+                   : (ok ? "문구를 복사했어요. 붙여넣고 결과 이미지를 첨부하세요." : "글쓰기 창을 열었어요."));
+    if (!w) setTimeout(() => { location.href = go; }, 1200);
+  });
+
+  $("#stopAgain").addEventListener("click", () => { $("#stop").hidden = true; start(); });
+  $("#stopHome").addEventListener("click", () => { $("#stop").hidden = true; show("start"); loadBoard("#board1"); });
+  $("#go").addEventListener("click", start);
+  $("#again").addEventListener("click", start);
+  $("#home").addEventListener("click", () => { show("start"); loadBoard("#board1"); });
+  $("#nick").addEventListener("input", () => $("#nameBox").classList.remove("need"));
+  $("#nick").addEventListener("keydown", e => { if (e.key === "Enter") start(); });
+  $("#nick").value = ls.get("with-nick") || "";
+  loadBoard("#board1");
+})();
+</script>
+</body>
+</html>
