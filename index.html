@@ -32,11 +32,16 @@
   #toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 50; background: var(--ink); color: #fff; padding: 10px 16px; font-size: 14px; font-weight: 600;
     max-width: 90vw; text-align: center; opacity: 0; transition: opacity .2s; pointer-events: none; border-radius: 6px; }
   #toast.on { opacity: .95; }
-  #bgm { position: fixed; right: 12px; top: 12px; z-index: 45; }
-  #bgmBtn { background: var(--ink); color: #fff; padding: 8px 12px; font: 700 12.5px 'Pretendard Variable'; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-  #bgmBtn[aria-pressed="false"] { background: #fff; color: var(--ink); border: 1.5px solid var(--ink); }
-  #ytWrap { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; right: 0; top: 0; }
-  @media (min-width: 560px) { #bgm { right: calc(50% - 250px); } }
+  /* 지금 재생 중 — 유튜브 플레이어를 보이게 (정책: 최소 200×200). 휴대폰은 화면 맨 아래, PC 는 게임 옆에 떠 있음 */
+  #np { margin: 0; padding: 14px 16px 18px; background: var(--paper); border-top: 2px solid var(--ink); }
+  #np .h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  #np .h b { font: 800 13px 'Pretendard Variable'; } #np .h b i { font-style: normal; color: var(--red); margin-right: 4px; }
+  #np .h a { font-size: 12.5px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+  #np .t { font-size: 12.5px; color: var(--ink2); margin-bottom: 8px; }
+  #npBox { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; background: #000; }
+  #npBox iframe, #npBox #yt { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #npHint { font-size: 12px; color: var(--ink2); margin-top: 6px; }
+  @media (min-width: 1260px) { #np { position: fixed; right: 24px; bottom: 24px; width: 340px; z-index: 30; border: 2px solid var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.18); } }
 
   /* 시작 */
   .ttl { font: 400 54px/1.0 'Black Han Sans'; margin: 10px 0 10px; letter-spacing: -.01em; }
@@ -160,7 +165,6 @@
   #stop .box { background: var(--paper); width: min(340px, 88%); padding: 22px; text-align: center; border-top: 6px solid #e08a00; }
   #stop .box b { font: 400 26px 'Black Han Sans'; display: block; color: #b56a00; }
   #stop .box p { font-size: 14px; line-height: 1.6; color: var(--ink2); margin: 10px 0 4px; }
-  body.ingame #bgm { display: none; }
   #bgmMini { font-size: 15px; margin-right: 10px; padding: 2px 6px; border: 1.5px solid var(--ink); border-radius: 12px; line-height: 1.2; }
   .foot { margin-top: 18px; font-size: 12px; color: #9a9384; line-height: 1.6; text-align: center; }
 </style>
@@ -239,9 +243,15 @@
     <div class="board" id="board2"></div>
     <div class="btns"><button class="btn pri" id="again">다시 도전 (기록 단축)</button><button class="btn sm" id="home">처음으로</button></div>
   </section>
+  <aside id="np" aria-label="지금 재생 중">
+    <div class="h"><b><i>♪</i>지금 재생 중 · BGM</b><a href="https://www.youtube.com/watch?v=kmDGZd1mv7I" target="_blank" rel="noopener">유튜브에서 보기 ↗</a></div>
+    <div class="t">RESCENE ‘[PULSE] Highlight Medley’ · 공식 채널</div>
+    <div id="npBox"><div id="yt"></div></div>
+    <p id="npHint">처음엔 소리 없이 재생돼요. ‘스밍 시작’을 누르면 소리가 켜지고 계속 반복돼요.</p>
+  </aside>
 </div>
 <div id="toast" role="status"></div>
-<div id="bgm" hidden><button type="button" id="bgmBtn" aria-pressed="false">🔈 BGM 켜기</button><div id="ytWrap"><div id="yt"></div></div></div>
+
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -600,26 +610,26 @@
     toast(ok ? "결과 이미지를 복사했어요. 올릴 곳에서 Ctrl+V!" : "이미지 복사가 막혔어요. ‘이미지 저장’을 써 주세요.");
   });
 
-  /* ── BGM: RESCENE 공식 유튜브 ‘[PULSE] Highlight Medley’ (유튜브 플레이어로만 재생 · 내려받지 않음) ──
-     브라우저는 소리 있는 자동 재생을 막으므로 ‘스밍 시작’을 누르는 순간 재생한다. */
+  /* ── BGM: RESCENE 공식 유튜브 ‘[PULSE] Highlight Medley’ — 보이는 플레이어로 재생(내려받지 않음) ──
+     페이지를 열면 소리 없이 자동 재생(브라우저가 허용하는 유일한 자동 재생), ‘스밍 시작’을 누르면 소리를 켠다. 끝나면 처음부터 반복. */
   const BGM_ID = "kmDGZd1mv7I";
-  let yt = null, ytReady = false, bgmWant = false;
-  const bgmLabel = on => { $("#bgmBtn").setAttribute("aria-pressed", on); $("#bgmBtn").textContent = on ? "🔊 BGM 끄기" : "🔈 BGM 켜기"; $("#bgmMini").textContent = on ? "🔊" : "🔈"; };
+  let yt = null, ytReady = false, wantSound = false;
+  const soundOn = () => ytReady && !yt.isMuted() && yt.getPlayerState() === 1;
+  const miniLabel = () => { $("#bgmMini").textContent = soundOn() ? "🔊" : "🔈"; };
   window.onYouTubeIframeAPIReady = () => {
-    yt = new YT.Player("yt", { width: 200, height: 113, videoId: BGM_ID,
-      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: BGM_ID, playsinline: 1, rel: 0 },
-      events: { onReady: () => { ytReady = true; yt.setVolume(55); $("#bgm").hidden = false; if (bgmWant) yt.playVideo(); },
-                onStateChange: ev => { if (ev.data === 1) bgmLabel(true); else if (ev.data === 0) { yt.seekTo(0, true); yt.playVideo(); } else if (ev.data === 2) bgmLabel(false); } } }); // 끝나면 처음부터 다시 (계속 반복)
+    yt = new YT.Player("yt", { width: "100%", height: "100%", videoId: BGM_ID,
+      playerVars: { autoplay: 1, mute: 1, controls: 1, loop: 1, playlist: BGM_ID, playsinline: 1, rel: 0, modestbranding: 1 },
+      events: { onReady: () => { ytReady = true; yt.setVolume(55); yt.mute(); yt.playVideo(); if (wantSound) unmutePlay(); miniLabel(); },
+                onStateChange: ev => { if (ev.data === 0) { yt.seekTo(0, true); yt.playVideo(); } setTimeout(miniLabel, 50); } } });
   };
   (() => { const t = document.createElement("script"); t.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(t); })();
-  function bgmPlay() { if (localStorageOff()) return; bgmWant = true; if (ytReady && yt.getPlayerState() !== 1) yt.playVideo(); }
-  const localStorageOff = () => ls.get("with-bgm") === "off";
-  const bgmToggle = () => {
-    if (!ytReady) { bgmWant = true; return; }
-    if (yt.getPlayerState() === 1) { yt.pauseVideo(); ls.set("with-bgm", "off"); } else { yt.playVideo(); ls.set("with-bgm", "on"); }
-  };
-  $("#bgmBtn").addEventListener("click", bgmToggle);
-  $("#bgmMini").addEventListener("click", bgmToggle);
+  function unmutePlay() { yt.unMute(); yt.setVolume(55); yt.playVideo(); $("#npHint").textContent = "소리가 켜졌어요. 끄려면 플레이어나 게임 화면의 🔊 버튼을 누르세요."; setTimeout(miniLabel, 300); }
+  function bgmPlay() { if (ls.get("with-bgm") === "off") return; wantSound = true; if (ytReady) unmutePlay(); }
+  $("#bgmMini").addEventListener("click", () => {
+    if (!ytReady) { wantSound = true; return; }
+    if (soundOn()) { yt.mute(); ls.set("with-bgm", "off"); } else { ls.set("with-bgm", "on"); unmutePlay(); }
+    setTimeout(miniLabel, 200);
+  });
   ["#go", "#again", "#stopAgain"].forEach(s => $(s).addEventListener("click", bgmPlay));
   $("#stopAgain").addEventListener("click", () => { $("#stop").hidden = true; start(); });
   $("#stopHome").addEventListener("click", () => { $("#stop").hidden = true; show("start"); loadBoard("#board1"); });
