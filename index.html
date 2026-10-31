@@ -32,6 +32,11 @@
   #toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 50; background: var(--ink); color: #fff; padding: 10px 16px; font-size: 14px; font-weight: 600;
     max-width: 90vw; text-align: center; opacity: 0; transition: opacity .2s; pointer-events: none; border-radius: 6px; }
   #toast.on { opacity: .95; }
+  #bgm { position: fixed; right: 12px; top: 12px; z-index: 45; }
+  #bgmBtn { background: var(--ink); color: #fff; padding: 8px 12px; font: 700 12.5px 'Pretendard Variable'; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  #bgmBtn[aria-pressed="false"] { background: #fff; color: var(--ink); border: 1.5px solid var(--ink); }
+  #ytWrap { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; right: 0; top: 0; }
+  @media (min-width: 560px) { #bgm { right: calc(50% - 250px); } }
 
   /* 시작 */
   .ttl { font: 400 54px/1.0 'Black Han Sans'; margin: 10px 0 10px; letter-spacing: -.01em; }
@@ -155,6 +160,8 @@
   #stop .box { background: var(--paper); width: min(340px, 88%); padding: 22px; text-align: center; border-top: 6px solid #e08a00; }
   #stop .box b { font: 400 26px 'Black Han Sans'; display: block; color: #b56a00; }
   #stop .box p { font-size: 14px; line-height: 1.6; color: var(--ink2); margin: 10px 0 4px; }
+  body.ingame #bgm { display: none; }
+  #bgmMini { font-size: 15px; margin-right: 10px; padding: 2px 6px; border: 1.5px solid var(--ink); border-radius: 12px; line-height: 1.2; }
   .foot { margin-top: 18px; font-size: 12px; color: #9a9384; line-height: 1.6; text-align: center; }
 </style>
 </head>
@@ -178,13 +185,13 @@
       ○ 다른 탭으로 나가 있는 동안엔 자동 스밍도 멈춰요(시간은 흘러요).
     </div>
     <div class="board" id="board1"></div>
-    <p class="foot">비공식 팬 패러디 게임 · 실제 음원 차트와 관계없습니다 · 닉네임 · 기록 · 기기 번호(무작위)만 저장</p>
+    <p class="foot">비공식 팬 패러디 게임 · 실제 음원 차트와 관계없습니다 · 닉네임 · 기록 · 기기 번호(무작위)만 저장<br>BGM: RESCENE 공식 유튜브 ‘[PULSE] Highlight Medley’ 재생</p>
   </section>
 
   <!-- 게임 -->
   <section id="game" hidden>
     <div class="top">
-      <div class="r1"><span class="kick">멜론 실시간 차트 (가상) · WITH</span><span class="clock" id="clock">0:00.0</span></div>
+      <div class="r1"><span class="kick">멜론 실시간 차트 (가상) · WITH</span><span><button type="button" id="bgmMini" aria-label="BGM 켜기/끄기">🔈</button><span class="clock" id="clock">0:00.0</span></span></div>
       <div class="r2"><div class="rank" id="rank">200<small>위</small></div><div class="up" id="up">▲ 0계단<small>시작 200위</small></div></div>
       <div class="chart" id="chart"></div>
       <div class="chart-cap"><span>가상 차트 · 다른 곡 · 가수는 지어낸 이름</span><span id="passed">추월 0곡</span></div>
@@ -234,6 +241,7 @@
   </section>
 </div>
 <div id="toast" role="status"></div>
+<div id="bgm" hidden><button type="button" id="bgmBtn" aria-pressed="false">🔈 BGM 켜기</button><div id="ytWrap"><div id="yt"></div></div></div>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -325,7 +333,7 @@
   }
 
   let G = null, raf = 0;
-  function show(id) { ["start", "game", "result"].forEach(x => $("#" + x).hidden = x !== id); window.scrollTo(0, 0); }
+  function show(id) { ["start", "game", "result"].forEach(x => $("#" + x).hidden = x !== id); document.body.classList.toggle("ingame", id === "game"); window.scrollTo(0, 0); }
 
   async function api(path, body) {
     const r = await fetch(API + path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
@@ -597,6 +605,27 @@
     if (!w) setTimeout(() => { location.href = go; }, 1200);
   });
 
+  /* ── BGM: RESCENE 공식 유튜브 ‘[PULSE] Highlight Medley’ (유튜브 플레이어로만 재생 · 내려받지 않음) ──
+     브라우저는 소리 있는 자동 재생을 막으므로 ‘스밍 시작’을 누르는 순간 재생한다. */
+  const BGM_ID = "kmDGZd1mv7I";
+  let yt = null, ytReady = false, bgmWant = false;
+  const bgmLabel = on => { $("#bgmBtn").setAttribute("aria-pressed", on); $("#bgmBtn").textContent = on ? "🔊 BGM 끄기" : "🔈 BGM 켜기"; $("#bgmMini").textContent = on ? "🔊" : "🔈"; };
+  window.onYouTubeIframeAPIReady = () => {
+    yt = new YT.Player("yt", { width: 200, height: 113, videoId: BGM_ID,
+      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: BGM_ID, playsinline: 1, rel: 0 },
+      events: { onReady: () => { ytReady = true; yt.setVolume(55); $("#bgm").hidden = false; if (bgmWant) yt.playVideo(); },
+                onStateChange: ev => { if (ev.data === 1) bgmLabel(true); else if (ev.data === 2 || ev.data === 0) bgmLabel(false); } } });
+  };
+  (() => { const t = document.createElement("script"); t.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(t); })();
+  function bgmPlay() { if (localStorageOff()) return; bgmWant = true; if (ytReady && yt.getPlayerState() !== 1) yt.playVideo(); }
+  const localStorageOff = () => ls.get("with-bgm") === "off";
+  const bgmToggle = () => {
+    if (!ytReady) { bgmWant = true; return; }
+    if (yt.getPlayerState() === 1) { yt.pauseVideo(); ls.set("with-bgm", "off"); } else { yt.playVideo(); ls.set("with-bgm", "on"); }
+  };
+  $("#bgmBtn").addEventListener("click", bgmToggle);
+  $("#bgmMini").addEventListener("click", bgmToggle);
+  ["#go", "#again", "#stopAgain"].forEach(s => $(s).addEventListener("click", bgmPlay));
   $("#stopAgain").addEventListener("click", () => { $("#stop").hidden = true; start(); });
   $("#stopHome").addEventListener("click", () => { $("#stop").hidden = true; show("start"); loadBoard("#board1"); });
   $("#go").addEventListener("click", start);
