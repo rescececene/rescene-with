@@ -614,7 +614,7 @@
     yt = new YT.Player("yt", { width: 200, height: 113, videoId: BGM_ID,
       playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: BGM_ID, playsinline: 1, rel: 0 },
       events: { onReady: () => { ytReady = true; yt.setVolume(55); $("#bgm").hidden = false; if (bgmWant) yt.playVideo(); },
-                onStateChange: ev => { if (ev.data === 1) bgmLabel(true); else if (ev.data === 2 || ev.data === 0) bgmLabel(false); } } });
+                onStateChange: ev => { if (ev.data === 1) bgmLabel(true); else if (ev.data === 0) { yt.seekTo(0, true); yt.playVideo(); } else if (ev.data === 2) bgmLabel(false); } } }); // 끝나면 처음부터 다시 (계속 반복)
   };
   (() => { const t = document.createElement("script"); t.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(t); })();
   function bgmPlay() { if (localStorageOff()) return; bgmWant = true; if (ytReady && yt.getPlayerState() !== 1) yt.playVideo(); }
