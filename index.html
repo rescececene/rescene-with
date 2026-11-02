@@ -330,13 +330,12 @@
     <div class="srv" id="srv">순위표에 기록을 올리는 중…</div>
     <div class="tl" id="tl"></div>
     <div class="sheet share"><span class="tape l"></span>
-      <h4>리센느 갤에 인증하기</h4>
+      <h4>기록 자랑하기</h4>
       <p id="shareHow"></p>
       <div id="imgWrap"><img id="rImg" alt="정주행 클리커 결과 이미지"><p id="imgNote">결과 이미지를 만드는 중…</p></div>
       <div class="btns">
-        <button class="btn pri" id="toGall">리센느 갤 글쓰기 열기</button>
-        <button class="btn" id="shareImg" hidden>결과 이미지 공유하기 (앱 고르기)</button>
-        <div class="row2"><a class="btn sm" id="dlImg" download="WITH_1위_기록.png">이미지 저장</a><button class="btn sm" id="copyTxt">결과 문구 복사</button></div>
+        <button class="btn pri" id="copyImg">결과 이미지 복사</button>
+        <a class="btn sm" id="dlImg" download="WITH_1위_기록.png" hidden>이미지 저장</a>
       </div>
     </div>
     <div class="board" id="board2"></div>
@@ -350,8 +349,6 @@
   const $ = s => document.querySelector(s);
   const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://127.0.0.1:8799" : "https://rescene-games.get943.workers.dev";
   const URL0 = location.href.split(/[?#]/)[0];
-  // 공유 = 리센느 마이너 갤러리(rescene1) 글쓰기 — 사용자 지정
-  const GALL_PC = "https://gall.dcinside.com/mgallery/board/write/?id=rescene1", GALL_M = "https://m.dcinside.com/write/rescene1";
   const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 2400); };
   const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   const fmt = n => Math.floor(n).toLocaleString("ko-KR");
@@ -653,15 +650,8 @@
 
   /* ── 결과 이미지 · 공유 ── */
   const MOB = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  const CLIP_IMG = !MOB && !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
+  const CLIP_IMG = !!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
   let imgBlob = null, imgJob = null;
-  const text = () => "[정주행 클리커 · WITH 1위] " + G.name + " · " + fmtT(G.ms) + " 만에 1위 (" + titleOf(G.ms) + ")"
-    + (G.server ? " · 전체 " + G.server.rank + "위" : "") + "\n탭 " + fmt(G.taps) + "번 · 누적 스밍 " + fmt(G.S) + "\n나도 1위 만들기 → " + URL0;
-  async function copy(t) {
-    try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
-    const ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
-    let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove(); return ok;
-  }
   async function makeImage() {
     try { await Promise.all(["400 80px 'Black Han Sans'", "400 50px 'Nanum Pen Script'", "800 30px 'Pretendard Variable'"].map(f => document.fonts.load(f, "WITH 1위 만들기 0123456789 리마인"))); } catch (e) {}
     const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
@@ -697,28 +687,21 @@
     return cv;
   }
   function prepShare() {
-    imgBlob = null; $("#rImg").removeAttribute("src"); $("#imgNote").textContent = "결과 이미지를 만드는 중…"; $("#shareImg").hidden = true;
-    $("#shareHow").innerHTML = CLIP_IMG
-      ? "빨간 버튼을 누르면 <b>결과 이미지가 자동으로 복사</b>되고 리센느 갤 글쓰기 창이 열려요. 본문에서 <b>Ctrl+V</b> 하면 이미지가 들어가요. 링크 문구는 ‘결과 문구 복사’로."
-      : "① <b>이미지 저장</b>(또는 길게 눌러 저장) → ② 빨간 버튼으로 리센느 갤 글쓰기를 열면 문구가 복사돼요 → ③ 붙여넣고 사진 첨부로 이미지를 넣으세요.";
-    $("#toGall").textContent = CLIP_IMG ? "리센느 갤 글쓰기 열기 (결과 이미지 자동 복사)" : "리센느 갤 글쓰기 열기 (결과 문구 자동 복사)";
+    imgBlob = null; $("#rImg").removeAttribute("src"); $("#imgNote").textContent = "결과 이미지를 만드는 중…";
+    $("#shareHow").innerHTML = "버튼을 누르면 <b>결과 이미지가 복사</b>돼요. 올리고 싶은 곳에 붙여넣기(<b>Ctrl+V</b>) 하세요.";
+    $("#copyImg").hidden = !CLIP_IMG; $("#dlImg").hidden = CLIP_IMG;
+    if (!CLIP_IMG) $("#shareHow").textContent = "이 브라우저는 이미지 복사가 안 돼요. 이미지를 저장(또는 길게 눌러 저장)해서 올려 주세요.";
     imgJob = makeImage().then(cv => new Promise(res => cv.toBlob(b => {
       imgBlob = b; const url = URL.createObjectURL(b); $("#rImg").src = url; $("#dlImg").href = url;
-      $("#imgNote").textContent = MOB ? "이미지를 길게 눌러 저장할 수도 있어요." : "이 이미지가 글에 들어가요.";
-      const f = new File([b], "WITH_1위_기록.png", { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [f] })) { $("#shareImg").hidden = false; $("#shareImg").onclick = () => navigator.share({ files: [f], text: text() }).catch(() => {}); }
+      $("#imgNote").textContent = MOB ? "이미지를 길게 눌러 저장할 수도 있어요." : "이 이미지가 복사돼요.";
       res(b);
     }, "image/png")));
   }
-  $("#copyTxt").addEventListener("click", async () => toast(await copy(text()) ? "결과 문구를 복사했어요." : "복사가 안 되면 직접 복사해 주세요."));
-  $("#toGall").addEventListener("click", async () => {
-    const go = MOB ? GALL_M : GALL_PC; let ok = false;
-    if (CLIP_IMG) { try { await navigator.clipboard.write([new ClipboardItem({ "image/png": imgBlob || imgJob })]); ok = true; } catch (e) {} }
-    else ok = await copy(text());
-    const w = window.open(go, "_blank"); if (w) { try { w.opener = null; } catch (e) {} }
-    toast(CLIP_IMG ? (ok ? "결과 이미지를 복사했어요. 글쓰기 본문에서 Ctrl+V!" : "이미지 복사가 막혔어요. ‘이미지 저장’ 후 첨부해 주세요.")
-                   : (ok ? "문구를 복사했어요. 붙여넣고 결과 이미지를 첨부하세요." : "글쓰기 창을 열었어요."));
-    if (!w) setTimeout(() => { location.href = go; }, 1200);
+  $("#copyImg").addEventListener("click", async () => {
+    let ok = false;
+    try { await navigator.clipboard.write([new ClipboardItem({ "image/png": imgBlob || imgJob })]); ok = true; } catch (e) {}
+    if (!ok) $("#dlImg").hidden = false;
+    toast(ok ? "결과 이미지를 복사했어요. 붙여넣기 하세요!" : "이미지 복사가 막혔어요. ‘이미지 저장’을 눌러 주세요.");
   });
 
   /* ── BGM: RESCENE 공식 유튜브 ‘[PULSE] Highlight Medley’ — 보이는 플레이어로 재생(내려받지 않음) ──
